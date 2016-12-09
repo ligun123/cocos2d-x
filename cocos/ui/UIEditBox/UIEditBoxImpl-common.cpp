@@ -54,6 +54,7 @@ EditBoxImplCommon::EditBoxImplCommon(EditBox* pEditText)
 , _colText(Color3B::WHITE)
 , _colPlaceHolder(Color3B::GRAY)
 , _maxLength(-1)
+, _alignment(TextHAlignment::LEFT)
 {
 }
 
@@ -103,6 +104,7 @@ void EditBoxImplCommon::placeInactiveLabels()
 {
     _label->setPosition(CC_EDIT_BOX_PADDING, _contentSize.height / 2.0f);
     _labelPlaceHolder->setPosition(CC_EDIT_BOX_PADDING, _contentSize.height / 2.0f);
+    refreshLabelAlignment();
 }
 
 void EditBoxImplCommon::setInactiveText(const char* pText)
@@ -187,6 +189,12 @@ int EditBoxImplCommon::getMaxLength()
     return _maxLength;
 }
 
+void EditBoxImplCommon::setTextHorizontalAlignment(cocos2d::TextHAlignment alignment)
+{
+    _alignment = alignment;
+    this->setNativeTextHorizontalAlignment(alignment);
+}
+
 void EditBoxImplCommon::setInputFlag(EditBox::InputFlag inputFlag)
 {
     _editBoxInputFlag = inputFlag;
@@ -202,6 +210,9 @@ void EditBoxImplCommon::setReturnType(EditBox::KeyboardReturnType returnType)
 void EditBoxImplCommon::refreshInactiveText()
 {
     setInactiveText(_text.c_str());
+
+    refreshLabelAlignment();
+
     if(_text.size() == 0)
     {
         _label->setVisible(false);
@@ -212,6 +223,15 @@ void EditBoxImplCommon::refreshInactiveText()
         _label->setVisible(true);
         _labelPlaceHolder->setVisible(false);
     }
+}
+
+void EditBoxImplCommon::refreshLabelAlignment()
+{
+    _label->setWidth(_contentSize.width);
+    _labelPlaceHolder->setWidth(_contentSize.width);
+
+    _label->setHorizontalAlignment(_alignment);
+    _labelPlaceHolder->setHorizontalAlignment(_alignment);
 }
 
 void EditBoxImplCommon::setText(const char* text)
@@ -231,12 +251,8 @@ void EditBoxImplCommon::setPlaceHolder(const char* pText)
     if (pText != NULL)
     {
         _placeHolder = pText;
-        if (_placeHolder.length() > 0 && _text.length() == 0)
-        {
-            _labelPlaceHolder->setVisible(true);
-        }
-
         _labelPlaceHolder->setString(_placeHolder);
+
         this->setNativePlaceHolder(pText);
     }
 }
@@ -244,7 +260,13 @@ void EditBoxImplCommon::setPlaceHolder(const char* pText)
 
 void EditBoxImplCommon::setVisible(bool visible)
 {
-    this->setNativeVisible(visible);
+    if(visible) {
+        refreshInactiveText();
+    } else {
+        this->setNativeVisible(visible);
+        _label->setVisible(visible);
+        _labelPlaceHolder->setVisible(visible);
+    }
 }
 
 void EditBoxImplCommon::setContentSize(const Size& size)
@@ -254,7 +276,7 @@ void EditBoxImplCommon::setContentSize(const Size& size)
     placeInactiveLabels();
 }
 
-void EditBoxImplCommon::draw(Renderer *renderer, const Mat4 &transform, uint32_t flags)
+void EditBoxImplCommon::draw(Renderer* /*renderer*/, const Mat4& /*transform*/, uint32_t flags)
 {
     if(flags)
     {
@@ -276,6 +298,7 @@ void EditBoxImplCommon::openKeyboard()
     _label->setVisible(false);
     _labelPlaceHolder->setVisible(false);
 
+    this->setNativeVisible(true);
     this->nativeOpenKeyboard();
 }
 
@@ -284,21 +307,11 @@ void EditBoxImplCommon::closeKeyboard()
     this->nativeCloseKeyboard();
 }
 
-void EditBoxImplCommon::onEndEditing(const std::string& text)
+void EditBoxImplCommon::onEndEditing(const std::string& /*text*/)
 {
     this->setNativeVisible(false);
     
-    if(text.size() == 0)
-    {
-        _label->setVisible(false);
-        _labelPlaceHolder->setVisible(true);
-    }
-    else
-    {
-        _label->setVisible(true);
-        _labelPlaceHolder->setVisible(false);
-        setInactiveText(text.c_str());
-    }
+    refreshInactiveText();
 }
     
 void EditBoxImplCommon::editBoxEditingDidBegin()
@@ -321,15 +334,15 @@ void EditBoxImplCommon::editBoxEditingDidBegin()
 #endif
 }
 
-void EditBoxImplCommon::editBoxEditingDidEnd(const std::string& text)
+  void EditBoxImplCommon::editBoxEditingDidEnd(const std::string& text, EditBoxDelegate::EditBoxEndAction action)
 {
     // LOGD("textFieldShouldEndEditing...");
     _text = text;
-    this->refreshInactiveText();
     
     cocos2d::ui::EditBoxDelegate *pDelegate = _editBox->getDelegate();
     if (pDelegate != nullptr)
     {
+        pDelegate->editBoxEditingDidEndWithAction(_editBox, action);
         pDelegate->editBoxEditingDidEnd(_editBox);
         pDelegate->editBoxReturn(_editBox);
     }

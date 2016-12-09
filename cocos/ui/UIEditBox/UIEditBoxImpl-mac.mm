@@ -98,6 +98,9 @@ NSFont* EditBoxImplMac::constructFont(const char *fontName, int fontSize)
     else
     {
         textFont = [NSFont fontWithName:fntName size:fontSize];
+        if (textFont == nil) {
+            textFont = [NSFont systemFontOfSize:fontSize];
+        }
     }
     
     return textFont;
@@ -161,6 +164,11 @@ void EditBoxImplMac::setNativeInputFlag(EditBox::InputFlag inputFlag)
 void EditBoxImplMac::setNativeReturnType(EditBox::KeyboardReturnType returnType)
 {
     [_sysEdit setReturnType:returnType];
+}
+
+void EditBoxImplMac::setNativeTextHorizontalAlignment(cocos2d::TextHAlignment alignment)
+{
+    [_sysEdit setTextHorizontalAlignment:alignment];
 }
 
 bool EditBoxImplMac::isEditing()

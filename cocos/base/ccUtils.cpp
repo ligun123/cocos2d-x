@@ -1,6 +1,6 @@
 /****************************************************************************
 Copyright (c) 2010      cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
 
 http://www.cocos2d-x.org
 
@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include "base/ccUtils.h"
 
+#include <cmath>
 #include <stdlib.h>
 
 #include "base/CCDirector.h"
@@ -127,7 +128,7 @@ void onCaptureScreen(const std::function<void(bool, const std::string&)>& afterC
 
             // Save image in AsyncTaskPool::TaskType::TASK_IO thread, and call afterCaptured in mainThread
             static bool succeedSaveToFile = false;
-            std::function<void(void*)> mainThread = [afterCaptured, outputFile](void* param)
+            std::function<void(void*)> mainThread = [afterCaptured, outputFile](void* /*param*/)
             {
                 if (afterCaptured)
                 {
@@ -136,7 +137,7 @@ void onCaptureScreen(const std::function<void(bool, const std::string&)>& afterC
                 startedCapture = false;
             };
 
-            AsyncTaskPool::getInstance()->enqueue(AsyncTaskPool::TaskType::TASK_IO, mainThread, (void*)NULL, [image, outputFile]()
+            AsyncTaskPool::getInstance()->enqueue(AsyncTaskPool::TaskType::TASK_IO, mainThread, nullptr, [image, outputFile]()
             {
                 succeedSaveToFile = image->saveToFile(outputFile);
                 delete image;
@@ -168,7 +169,7 @@ void captureScreen(const std::function<void(bool, const std::string&)>& afterCap
     }
     s_captureScreenCommand.init(std::numeric_limits<float>::max());
     s_captureScreenCommand.func = std::bind(onCaptureScreen, afterCaptured, filename);
-    s_captureScreenListener = Director::getInstance()->getEventDispatcher()->addCustomEventListener(Director::EVENT_AFTER_DRAW, [](EventCustom *event) {
+    s_captureScreenListener = Director::getInstance()->getEventDispatcher()->addCustomEventListener(Director::EVENT_AFTER_DRAW, [](EventCustom* /*event*/) {
         auto director = Director::getInstance();
         director->getEventDispatcher()->removeEventListener((EventListener*)(s_captureScreenListener));
         s_captureScreenListener = nullptr;
@@ -198,7 +199,7 @@ Image* captureNode(Node* startNode, float scale)
     rtx->end();
     startNode->setPosition(savedPos);
 
-    if (std::abs(scale - 1.0f) < 1e-6/* no scale */)
+    if (std::abs(scale - 1.0f) < 1e-6f/* no scale */)
         finalRtx = rtx;
     else {
         /* scale */
@@ -265,7 +266,7 @@ long long getTimeInMilliseconds()
 {
     struct timeval tv;
     gettimeofday (&tv, nullptr);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    return (long long)tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 Rect getCascadeBoundingBox(Node *node)
@@ -326,6 +327,11 @@ Sprite* createSpriteFromBase64Cached(const char* base64String, const char* key)
         CCASSERT(imageResult, "Failed to create image from base64!");
         free(decoded);
 
+        if (!imageResult) {
+            CC_SAFE_RELEASE_NULL(image);
+            return nullptr;
+        }
+
         texture = Director::getInstance()->getTextureCache()->addImage(image, key);
         image->release();
     }
@@ -345,6 +351,11 @@ Sprite* createSpriteFromBase64(const char* base64String)
     CCASSERT(imageResult, "Failed to create image from base64!");
     free(decoded);
 
+    if (!imageResult) {
+        CC_SAFE_RELEASE_NULL(image);
+        return nullptr;
+    }
+
     Texture2D *texture = new (std::nothrow) Texture2D();
     texture->initWithImage(image);
     texture->setAliasTexParameters();
@@ -356,22 +367,20 @@ Sprite* createSpriteFromBase64(const char* base64String)
     return sprite;
 }
 
-Node* findChild(Node* levelRoot, const char* name)
+Node* findChild(Node* levelRoot, const std::string& name)
 {
-    if (levelRoot == nullptr)
+    if (levelRoot == nullptr || name.empty())
         return nullptr;
 
     // Find this node
-    {
-        auto target = levelRoot->getChildByName(name);
-        if (target != nullptr)
-            return target;
-    }
+    auto target = levelRoot->getChildByName(name);
+    if (target != nullptr)
+        return target;
 
     // Find recursively
     for (auto& child : levelRoot->getChildren())
     {
-        auto target = findChild(child, name);
+        target = findChild(child, name);
         if (target != nullptr)
             return target;
     }
@@ -380,20 +389,18 @@ Node* findChild(Node* levelRoot, const char* name)
 
 Node* findChild(Node* levelRoot, int tag)
 {
-    if (levelRoot == nullptr)
+    if (levelRoot == nullptr || tag == Node::INVALID_TAG)
         return nullptr;
 
     // Find this node
-    {
-        auto target = levelRoot->getChildByTag(tag);
-        if (target != nullptr)
-            return target;
-    }
+    auto target = levelRoot->getChildByTag(tag);
+    if (target != nullptr)
+        return target;
 
     // Find recursively
     for (auto& child : levelRoot->getChildren())
     {
-        auto target = findChild(child, tag);
+        target = findChild(child, tag);
         if (target != nullptr)
             return target;
     }

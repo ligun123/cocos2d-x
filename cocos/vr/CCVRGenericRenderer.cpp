@@ -59,10 +59,8 @@ VRGenericRenderer::~VRGenericRenderer()
     CC_SAFE_DELETE(_rightDistortionMesh);
 }
 
-void VRGenericRenderer::setup(GLView* glview)
+void VRGenericRenderer::setup(GLView* /*glview*/)
 {
-//    CC_UNUSED(glview);
-
     // set origin to 0,0 in case origin is not 0,0
     auto vp = Camera::getDefaultViewport();
 
@@ -86,7 +84,6 @@ void VRGenericRenderer::setup(GLView* glview)
     _fb->attachRenderTarget(rt);
     _fb->attachDepthStencilTarget(ds);
     _fb->setClearColor(Color4F(0,0,0,1));
-
 
     _distortion = new Distortion;
     _leftDistortionMesh = createDistortionMesh(VREye::EyeType::LEFT);
@@ -119,10 +116,12 @@ void VRGenericRenderer::render(Scene* scene, Renderer* renderer)
     rightTransform *= headRotation;
 
     _fb->applyFBO();
+    auto defaultVP = Camera::getDefaultViewport();
     Camera::setDefaultViewport(_leftEye.viewport);
     scene->render(renderer, leftTransform, nullptr);
     Camera::setDefaultViewport(_rightEye.viewport);
     scene->render(renderer, rightTransform, nullptr);
+    Camera::setDefaultViewport(defaultVP);
     _fb->restoreFBO();
 
     auto texture = _fb->getRenderTarget()->getTexture();

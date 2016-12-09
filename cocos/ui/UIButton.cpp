@@ -1,5 +1,5 @@
 /****************************************************************************
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
 
 http://www.cocos2d-x.org
 
@@ -156,6 +156,25 @@ void Button::createTitleRenderer()
     _titleRenderer = Label::create();
     _titleRenderer->setAnchorPoint(Vec2::ANCHOR_MIDDLE);
     addProtectedChild(_titleRenderer, TITLE_RENDERER_Z, -1);
+}
+
+/** replaces the current Label node with a new one */
+void Button::setTitleLabel(Label* label)
+{
+    if (_titleRenderer != label) {
+        CC_SAFE_RELEASE(_titleRenderer);
+        _titleRenderer = label;
+        CC_SAFE_RETAIN(_titleRenderer);
+
+        addProtectedChild(_titleRenderer, TITLE_RENDERER_Z, -1);
+        updateTitleLocation();
+    }
+}
+
+/** returns the current Label being used */
+Label* Button::getTitleLabel() const
+{
+    return _titleRenderer;
 }
 
 void Button::setScale9Enabled(bool able)
@@ -453,7 +472,7 @@ void Button::onPressStateChangedToNormal()
             _buttonNormalRenderer->setScale(1.0);
             _buttonClickedRenderer->setScale(1.0);
 
-            if(nullptr != _titleRenderer)
+            if (nullptr != _titleRenderer)
             {
                 _titleRenderer->stopAllActions();
                 if (_unifySize)
@@ -474,7 +493,7 @@ void Button::onPressStateChangedToNormal()
         _buttonNormalRenderer->stopAllActions();
         _buttonNormalRenderer->setScale(1.0);
 
-        if(nullptr != _titleRenderer)
+        if (nullptr != _titleRenderer)
         {
             _titleRenderer->stopAllActions();
             _titleRenderer->setScaleX(1.0f);
@@ -500,14 +519,14 @@ void Button::onPressStateChangedToPressed()
             _buttonClickedRenderer->stopAllActions();
 
             Action *zoomAction = ScaleTo::create(ZOOM_ACTION_TIME_STEP,
-                                                 1.0 + _zoomScale,
-                                                 1.0 + _zoomScale);
+                                                 1.0f + _zoomScale,
+                                                 1.0f + _zoomScale);
             _buttonClickedRenderer->runAction(zoomAction);
 
-            _buttonNormalRenderer->setScale(1.0 + _zoomScale,
-                                            1.0 + _zoomScale);
+            _buttonNormalRenderer->setScale(1.0f + _zoomScale,
+                                            1.0f + _zoomScale);
 
-            if(nullptr != _titleRenderer)
+            if (nullptr != _titleRenderer)
             {
                 _titleRenderer->stopAllActions();
                 Action *zoomTitleAction = ScaleTo::create(ZOOM_ACTION_TIME_STEP,
@@ -523,9 +542,9 @@ void Button::onPressStateChangedToPressed()
         _buttonDisabledRenderer->setVisible(false);
 
         _buttonNormalRenderer->stopAllActions();
-        _buttonNormalRenderer->setScale(1.0 +_zoomScale, 1.0 + _zoomScale);
+        _buttonNormalRenderer->setScale(1.0f +_zoomScale, 1.0f + _zoomScale);
 
-        if(nullptr != _titleRenderer)
+        if (nullptr != _titleRenderer)
         {
             _titleRenderer->stopAllActions();
             _titleRenderer->setScaleX(1.0f + _zoomScale);
@@ -586,7 +605,7 @@ void Button::updateContentSize()
 void Button::onSizeChanged()
 {
     Widget::onSizeChanged();
-    if(nullptr != _titleRenderer)
+    if (nullptr != _titleRenderer)
     {
         updateTitleLocation();
     }

@@ -3,7 +3,7 @@ Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2009      Leonardo Kasperavičius
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
 
 http://www.cocos2d-x.org
  
@@ -463,7 +463,7 @@ void ParticleSystemQuad::draw(Renderer *renderer, const Mat4 &transform, uint32_
     //quad command
     if(_particleCount > 0)
     {
-        _quadCommand.init(_globalZOrder, _texture->getName(), getGLProgramState(), _blendFunc, _quads, _particleCount, transform, flags);
+        _quadCommand.init(_globalZOrder, _texture, getGLProgramState(), _blendFunc, _quads, _particleCount, transform, flags);
         renderer->addCommand(&_quadCommand);
     }
 }
@@ -603,7 +603,7 @@ void ParticleSystemQuad::setupVBO()
     CHECK_GL_ERROR_DEBUG();
 }
 
-void ParticleSystemQuad::listenRendererRecreated(EventCustom* event)
+void ParticleSystemQuad::listenRendererRecreated(EventCustom* /*event*/)
 {
     //when comes to foreground in android, _buffersVBO and _VAOname is a wild handle
     //before recreating, we need to reset them to 0

@@ -2,7 +2,7 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
 
 http://www.cocos2d-x.org
 
@@ -823,6 +823,12 @@ void Scheduler::performFunctionInCocosThread(const std::function<void ()> &funct
     _functionsToPerform.push_back(function);
 
     _performMutex.unlock();
+}
+
+void Scheduler::removeAllFunctionsToBePerformedInCocosThread()
+{
+    std::unique_lock<std::mutex> lock(_performMutex);
+    _functionsToPerform.clear();
 }
 
 // main loop

@@ -1,6 +1,6 @@
 /****************************************************************************
 Copyright (c) 2010-2013 cocos2d-x.org
-Copyright (c) 2013-2014 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
 
 http://www.cocos2d-x.org
 
@@ -131,8 +131,6 @@ public:
 
     void startElement(void *ctx, const char *name, const char **atts)
     {
-        CC_UNUSED_PARAM(ctx);
-        CC_UNUSED_PARAM(atts);
         const std::string sName(name);
         if( sName == "dict" )
         {
@@ -222,7 +220,6 @@ public:
 
     void endElement(void *ctx, const char *name)
     {
-        CC_UNUSED_PARAM(ctx);
         SAXState curState = _stateStack.empty() ? SAX_DICT : _stateStack.top();
         const std::string sName((char*)name);
         if( sName == "dict" )
@@ -292,9 +289,8 @@ public:
         _state = SAX_NONE;
     }
 
-    void textHandler(void *ctx, const char *ch, int len)
+    void textHandler(void *ctx, const char *ch, size_t len) override
     {
-        CC_UNUSED_PARAM(ctx);
         if (_state == SAX_NONE)
         {
             return;
@@ -530,10 +526,10 @@ static tinyxml2::XMLElement* generateElementForArray(const ValueVector& array, t
 #else
 
 /* The subclass FileUtilsApple should override these two method. */
-ValueMap FileUtils::getValueMapFromFile(const std::string& filename) {return ValueMap();}
-ValueMap FileUtils::getValueMapFromData(const char* filedata, int filesize) {return ValueMap();}
-ValueVector FileUtils::getValueVectorFromFile(const std::string& filename) {return ValueVector();}
-bool FileUtils::writeToFile(const ValueMap& dict, const std::string &fullPath) {return false;}
+ValueMap FileUtils::getValueMapFromFile(const std::string& /*filename*/) {return ValueMap();}
+ValueMap FileUtils::getValueMapFromData(const char* /*filedata*/, int /*filesize*/) {return ValueMap();}
+ValueVector FileUtils::getValueVectorFromFile(const std::string& /*filename*/) {return ValueVector();}
+bool FileUtils::writeToFile(const ValueMap& /*dict*/, const std::string &/*fullPath*/) {return false;}
 
 #endif /* (CC_TARGET_PLATFORM != CC_PLATFORM_IOS) && (CC_TARGET_PLATFORM != CC_PLATFORM_MAC) */
 
@@ -614,10 +610,6 @@ std::string FileUtils::getStringFromFile(const std::string& filename)
 {
     std::string s;
     getContents(filename, &s);
-
-    // truncated
-    s.resize(strlen(s.data()));
-
     return s;
 }
 
@@ -644,9 +636,17 @@ FileUtils::Status FileUtils::getContents(const std::string& filename, ResizableB
     if (!fp)
         return Status::OpenFailed;
 
-    fseek(fp, 0, SEEK_END);
-    size_t size = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+#if defined(_MSC_VER)
+    auto descriptor = _fileno(fp);
+#else
+    auto descriptor = fileno(fp);
+#endif
+    struct stat statBuf;
+    if (fstat(descriptor, &statBuf) == -1) {
+        fclose(fp);
+        return Status::ReadFailed;
+    }
+    size_t size = statBuf.st_size;
 
     buffer->resize(size);
     size_t readsize = fread(buffer->buffer(), 1, size, fp);
@@ -654,7 +654,7 @@ FileUtils::Status FileUtils::getContents(const std::string& filename, ResizableB
 
     if (readsize < size) {
         buffer->resize(readsize);
-        return Status::ReadFaild;
+        return Status::ReadFailed;
     }
 
     return Status::OK;
@@ -791,7 +791,7 @@ std::string FileUtils::fullPathForFilename(const std::string &filename) const
             if (!fullpath.empty())
             {
                 // Using the filename passed in as key.
-                _fullPathCache.insert(std::make_pair(filename, fullpath));
+                _fullPathCache.emplace(filename, fullpath);
                 return fullpath;
             }
 
@@ -1008,10 +1008,10 @@ bool FileUtils::isDirectoryExist(const std::string& dirPath) const
         for (const auto& resolutionIt : _searchResolutionsOrderArray)
         {
             // searchPath + file_path + resourceDirectory
-            fullpath = searchIt + dirPath + resolutionIt;
+            fullpath = fullPathForFilename(searchIt + dirPath + resolutionIt);
             if (isDirectoryExistInternal(fullpath))
             {
-                _fullPathCache.insert(std::make_pair(dirPath, fullpath));
+                _fullPathCache.emplace(dirPath, fullpath);
                 return true;
             }
         }
@@ -1122,7 +1122,7 @@ bool FileUtils::createDirectory(const std::string& path)
 
     // Create path recursively
     subpath = "";
-    for (int i = 0; i < dirs.size(); ++i)
+    for (int i = 0, size = dirs.size(); i < size; ++i)
     {
         subpath += dirs[i];
         dir = opendir(subpath.c_str());
@@ -1150,24 +1150,12 @@ bool FileUtils::createDirectory(const std::string& path)
 
 bool FileUtils::removeDirectory(const std::string& path)
 {
-    // FIXME: Why using subclassing? an interface probably will be better
-    // to support different OS
-    // FileUtils::removeDirectory is subclassed on iOS/tvOS
-    // and system() is not available on tvOS
-#if !defined(CC_PLATFORM_IOS)
-    if (path.size() > 0 && path[path.size() - 1] != '/')
-    {
-        CCLOGERROR("Fail to remove directory, path must terminate with '/': %s", path.c_str());
-        return false;
-    }
-
     std::string command = "rm -r ";
     // Path may include space.
     command += "\"" + path + "\"";
     if (system(command.c_str()) >= 0)
         return true;
     else
-#endif
         return false;
 }
 
@@ -1268,11 +1256,11 @@ std::string FileUtils::getFileExtension(const std::string& filePath) const
     return fileExtension;
 }
 
-void FileUtils::valueMapCompact(ValueMap& valueMap)
+void FileUtils::valueMapCompact(ValueMap& /*valueMap*/)
 {
 }
 
-void FileUtils::valueVectorCompact(ValueVector& valueVector)
+void FileUtils::valueVectorCompact(ValueVector& /*valueVector*/)
 {
 }
 

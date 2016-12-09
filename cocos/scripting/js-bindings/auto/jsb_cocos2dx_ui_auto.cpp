@@ -3090,6 +3090,34 @@ bool js_cocos2dx_ui_Button_getTitleText(JSContext *cx, uint32_t argc, jsval *vp)
     JS_ReportError(cx, "js_cocos2dx_ui_Button_getTitleText : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_ui_Button_setTitleLabel(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::Button* cobj = (cocos2d::ui::Button *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Button_setTitleLabel : Invalid Native Object");
+    if (argc == 1) {
+        cocos2d::Label* arg0 = nullptr;
+        do {
+            if (args.get(0).isNull()) { arg0 = nullptr; break; }
+            if (!args.get(0).isObject()) { ok = false; break; }
+            js_proxy_t *jsProxy;
+            JS::RootedObject tmpObj(cx, args.get(0).toObjectOrNull());
+            jsProxy = jsb_get_js_proxy(tmpObj);
+            arg0 = (cocos2d::Label*)(jsProxy ? jsProxy->ptr : NULL);
+            JSB_PRECONDITION2( arg0, cx, false, "Invalid Native Object");
+        } while (0);
+        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Button_setTitleLabel : Error processing arguments");
+        cobj->setTitleLabel(arg0);
+        args.rval().setUndefined();
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_Button_setTitleLabel : wrong number of arguments: %d, was expecting %d", argc, 1);
+    return false;
+}
 bool js_cocos2dx_ui_Button_setTitleFontSize(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -3769,6 +3797,28 @@ bool js_cocos2dx_ui_Button_getPressedFile(JSContext *cx, uint32_t argc, jsval *v
     JS_ReportError(cx, "js_cocos2dx_ui_Button_getPressedFile : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_ui_Button_getTitleLabel(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::Button* cobj = (cocos2d::ui::Button *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Button_getTitleLabel : Invalid Native Object");
+    if (argc == 0) {
+        cocos2d::Label* ret = cobj->getTitleLabel();
+        jsval jsret = JSVAL_NULL;
+        if (ret) {
+            jsret = OBJECT_TO_JSVAL(js_get_or_create_jsobject<cocos2d::Label>(cx, (cocos2d::Label*)ret));
+        } else {
+            jsret = JSVAL_NULL;
+        };
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_Button_getTitleLabel : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_ui_Button_getTitleFontSize(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -4041,6 +4091,7 @@ void js_register_cocos2dx_ui_Button(JSContext *cx, JS::HandleObject global) {
     static JSFunctionSpec funcs[] = {
         JS_FN("getNormalTextureSize", js_cocos2dx_ui_Button_getNormalTextureSize, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getTitleText", js_cocos2dx_ui_Button_getTitleText, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("setTitleLabel", js_cocos2dx_ui_Button_setTitleLabel, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setTitleFontSize", js_cocos2dx_ui_Button_setTitleFontSize, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("resetPressedRender", js_cocos2dx_ui_Button_resetPressedRender, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setScale9Enabled", js_cocos2dx_ui_Button_setScale9Enabled, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -4070,6 +4121,7 @@ void js_register_cocos2dx_ui_Button(JSContext *cx, JS::HandleObject global) {
         JS_FN("loadTextureNormal", js_cocos2dx_ui_Button_loadTextureNormal, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setCapInsetsPressedRenderer", js_cocos2dx_ui_Button_setCapInsetsPressedRenderer, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getPressedFile", js_cocos2dx_ui_Button_getPressedFile, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getTitleLabel", js_cocos2dx_ui_Button_getTitleLabel, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getTitleFontSize", js_cocos2dx_ui_Button_getTitleFontSize, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getRendererNormal", js_cocos2dx_ui_Button_getRendererNormal, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getTitleFontName", js_cocos2dx_ui_Button_getTitleFontName, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -8699,6 +8751,24 @@ bool js_cocos2dx_ui_ListView_getCurSelectedIndex(JSContext *cx, uint32_t argc, j
     JS_ReportError(cx, "js_cocos2dx_ui_ListView_getCurSelectedIndex : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_ui_ListView_getScrollDuration(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::ListView* cobj = (cocos2d::ui::ListView *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_ListView_getScrollDuration : Invalid Native Object");
+    if (argc == 0) {
+        double ret = cobj->getScrollDuration();
+        jsval jsret = JSVAL_NULL;
+        jsret = DOUBLE_TO_JSVAL(ret);
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_ListView_getScrollDuration : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_ui_ListView_getItemsMargin(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -9261,6 +9331,26 @@ bool js_cocos2dx_ui_ListView_getRightmostItemInCurrentView(JSContext *cx, uint32
     JS_ReportError(cx, "js_cocos2dx_ui_ListView_getRightmostItemInCurrentView : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_ui_ListView_setScrollDuration(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::ListView* cobj = (cocos2d::ui::ListView *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_ListView_setScrollDuration : Invalid Native Object");
+    if (argc == 1) {
+        double arg0 = 0;
+        ok &= JS::ToNumber( cx, args.get(0), &arg0) && !std::isnan(arg0);
+        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_ListView_setScrollDuration : Error processing arguments");
+        cobj->setScrollDuration(arg0);
+        args.rval().setUndefined();
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_ListView_setScrollDuration : wrong number of arguments: %d, was expecting %d", argc, 1);
+    return false;
+}
 bool js_cocos2dx_ui_ListView_getClosestItemToPositionInCurrentView(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -9416,6 +9506,7 @@ void js_register_cocos2dx_ui_ListView(JSContext *cx, JS::HandleObject global) {
         JS_FN("removeLastItem", js_cocos2dx_ui_ListView_removeLastItem, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getCenterItemInCurrentView", js_cocos2dx_ui_ListView_getCenterItemInCurrentView, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getCurSelectedIndex", js_cocos2dx_ui_ListView_getCurSelectedIndex, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getScrollDuration", js_cocos2dx_ui_ListView_getScrollDuration, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getItemsMargin", js_cocos2dx_ui_ListView_getItemsMargin, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("jumpToItem", js_cocos2dx_ui_ListView_jumpToItem, 3, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setMagneticType", js_cocos2dx_ui_ListView_setMagneticType, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -9440,6 +9531,7 @@ void js_register_cocos2dx_ui_ListView(JSContext *cx, JS::HandleObject global) {
         JS_FN("getMagneticAllowedOutOfBoundary", js_cocos2dx_ui_ListView_getMagneticAllowedOutOfBoundary, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getClosestItemToPosition", js_cocos2dx_ui_ListView_getClosestItemToPosition, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getRightmostItemInCurrentView", js_cocos2dx_ui_ListView_getRightmostItemInCurrentView, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("setScrollDuration", js_cocos2dx_ui_ListView_setScrollDuration, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getClosestItemToPositionInCurrentView", js_cocos2dx_ui_ListView_getClosestItemToPositionInCurrentView, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setItemModel", js_cocos2dx_ui_ListView_setItemModel, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("insertCustomItem", js_cocos2dx_ui_ListView_insertCustomItem, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -9592,6 +9684,28 @@ bool js_cocos2dx_ui_Slider_getBallNormalFile(JSContext *cx, uint32_t argc, jsval
     JS_ReportError(cx, "js_cocos2dx_ui_Slider_getBallNormalFile : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
+bool js_cocos2dx_ui_Slider_getSlidBallDisabledRenderer(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::Slider* cobj = (cocos2d::ui::Slider *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Slider_getSlidBallDisabledRenderer : Invalid Native Object");
+    if (argc == 0) {
+        cocos2d::Sprite* ret = cobj->getSlidBallDisabledRenderer();
+        jsval jsret = JSVAL_NULL;
+        if (ret) {
+            jsret = OBJECT_TO_JSVAL(js_get_or_create_jsobject<cocos2d::Sprite>(cx, (cocos2d::Sprite*)ret));
+        } else {
+            jsret = JSVAL_NULL;
+        };
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_Slider_getSlidBallDisabledRenderer : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_ui_Slider_setScale9Enabled(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -9722,6 +9836,28 @@ bool js_cocos2dx_ui_Slider_loadSlidBallTextures(JSContext *cx, uint32_t argc, js
     }
 
     JS_ReportError(cx, "js_cocos2dx_ui_Slider_loadSlidBallTextures : wrong number of arguments: %d, was expecting %d", argc, 1);
+    return false;
+}
+bool js_cocos2dx_ui_Slider_getSlidBallRenderer(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::Slider* cobj = (cocos2d::ui::Slider *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Slider_getSlidBallRenderer : Invalid Native Object");
+    if (argc == 0) {
+        cocos2d::Node* ret = cobj->getSlidBallRenderer();
+        jsval jsret = JSVAL_NULL;
+        if (ret) {
+            jsret = OBJECT_TO_JSVAL(js_get_or_create_jsobject<cocos2d::Node>(cx, (cocos2d::Node*)ret));
+        } else {
+            jsret = JSVAL_NULL;
+        };
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_Slider_getSlidBallRenderer : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
 bool js_cocos2dx_ui_Slider_addEventListener(JSContext *cx, uint32_t argc, jsval *vp)
@@ -9873,6 +10009,28 @@ bool js_cocos2dx_ui_Slider_getCapInsetsProgressBarRenderer(JSContext *cx, uint32
     }
 
     JS_ReportError(cx, "js_cocos2dx_ui_Slider_getCapInsetsProgressBarRenderer : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
+bool js_cocos2dx_ui_Slider_getSlidBallPressedRenderer(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::Slider* cobj = (cocos2d::ui::Slider *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Slider_getSlidBallPressedRenderer : Invalid Native Object");
+    if (argc == 0) {
+        cocos2d::Sprite* ret = cobj->getSlidBallPressedRenderer();
+        jsval jsret = JSVAL_NULL;
+        if (ret) {
+            jsret = OBJECT_TO_JSVAL(js_get_or_create_jsobject<cocos2d::Sprite>(cx, (cocos2d::Sprite*)ret));
+        } else {
+            jsret = JSVAL_NULL;
+        };
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_Slider_getSlidBallPressedRenderer : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
 bool js_cocos2dx_ui_Slider_loadSlidBallTexturePressed(JSContext *cx, uint32_t argc, jsval *vp)
@@ -10047,6 +10205,28 @@ bool js_cocos2dx_ui_Slider_loadSlidBallTextureDisabled(JSContext *cx, uint32_t a
     JS_ReportError(cx, "js_cocos2dx_ui_Slider_loadSlidBallTextureDisabled : wrong number of arguments: %d, was expecting %d", argc, 1);
     return false;
 }
+bool js_cocos2dx_ui_Slider_getSlidBallNormalRenderer(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::Slider* cobj = (cocos2d::ui::Slider *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Slider_getSlidBallNormalRenderer : Invalid Native Object");
+    if (argc == 0) {
+        cocos2d::Sprite* ret = cobj->getSlidBallNormalRenderer();
+        jsval jsret = JSVAL_NULL;
+        if (ret) {
+            jsret = OBJECT_TO_JSVAL(js_get_or_create_jsobject<cocos2d::Sprite>(cx, (cocos2d::Sprite*)ret));
+        } else {
+            jsret = JSVAL_NULL;
+        };
+        args.rval().set(jsret);
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_Slider_getSlidBallNormalRenderer : wrong number of arguments: %d, was expecting %d", argc, 0);
+    return false;
+}
 bool js_cocos2dx_ui_Slider_setZoomScale(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -10185,17 +10365,20 @@ void js_register_cocos2dx_ui_Slider(JSContext *cx, JS::HandleObject global) {
         JS_FN("loadSlidBallTextureNormal", js_cocos2dx_ui_Slider_loadSlidBallTextureNormal, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("loadProgressBarTexture", js_cocos2dx_ui_Slider_loadProgressBarTexture, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getBallNormalFile", js_cocos2dx_ui_Slider_getBallNormalFile, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getSlidBallDisabledRenderer", js_cocos2dx_ui_Slider_getSlidBallDisabledRenderer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setScale9Enabled", js_cocos2dx_ui_Slider_setScale9Enabled, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getBallPressedFile", js_cocos2dx_ui_Slider_getBallPressedFile, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getZoomScale", js_cocos2dx_ui_Slider_getZoomScale, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setCapInsetProgressBarRenderer", js_cocos2dx_ui_Slider_setCapInsetProgressBarRenderer, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("loadSlidBallTextures", js_cocos2dx_ui_Slider_loadSlidBallTextures, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getSlidBallRenderer", js_cocos2dx_ui_Slider_getSlidBallRenderer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("addEventListener", js_cocos2dx_ui_Slider_addEventListener, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setMaxPercent", js_cocos2dx_ui_Slider_setMaxPercent, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("loadBarTexture", js_cocos2dx_ui_Slider_loadBarTexture, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getProgressBarFile", js_cocos2dx_ui_Slider_getProgressBarFile, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getCapInsetsBarRenderer", js_cocos2dx_ui_Slider_getCapInsetsBarRenderer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getCapInsetsProgressBarRenderer", js_cocos2dx_ui_Slider_getCapInsetsProgressBarRenderer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getSlidBallPressedRenderer", js_cocos2dx_ui_Slider_getSlidBallPressedRenderer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("loadSlidBallTexturePressed", js_cocos2dx_ui_Slider_loadSlidBallTexturePressed, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getBackFile", js_cocos2dx_ui_Slider_getBackFile, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("isScale9Enabled", js_cocos2dx_ui_Slider_isScale9Enabled, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -10204,6 +10387,7 @@ void js_register_cocos2dx_ui_Slider(JSContext *cx, JS::HandleObject global) {
         JS_FN("getPercent", js_cocos2dx_ui_Slider_getPercent, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setCapInsets", js_cocos2dx_ui_Slider_setCapInsets, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("loadSlidBallTextureDisabled", js_cocos2dx_ui_Slider_loadSlidBallTextureDisabled, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getSlidBallNormalRenderer", js_cocos2dx_ui_Slider_getSlidBallNormalRenderer, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setZoomScale", js_cocos2dx_ui_Slider_setZoomScale, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("ctor", js_cocos2dx_ui_Slider_ctor, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
@@ -12501,22 +12685,41 @@ bool js_cocos2dx_ui_PageView_setIndicatorPosition(JSContext *cx, uint32_t argc, 
 }
 bool js_cocos2dx_ui_PageView_scrollToPage(JSContext *cx, uint32_t argc, jsval *vp)
 {
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::PageView* cobj = (cocos2d::ui::PageView *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_PageView_scrollToPage : Invalid Native Object");
-    if (argc == 1) {
-        ssize_t arg0 = 0;
-        ok &= jsval_to_ssize(cx, args.get(0), &arg0);
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_PageView_scrollToPage : Error processing arguments");
-        cobj->scrollToPage(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
+    cocos2d::ui::PageView* cobj = nullptr;
 
-    JS_ReportError(cx, "js_cocos2dx_ui_PageView_scrollToPage : wrong number of arguments: %d, was expecting %d", argc, 1);
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx);
+    obj.set(args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cobj = (cocos2d::ui::PageView *)(proxy ? proxy->ptr : nullptr);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_PageView_scrollToPage : Invalid Native Object");
+    do {
+        if (argc == 2) {
+            ssize_t arg0 = 0;
+            ok &= jsval_to_ssize(cx, args.get(0), &arg0);
+            if (!ok) { ok = true; break; }
+            double arg1 = 0;
+            ok &= JS::ToNumber( cx, args.get(1), &arg1) && !std::isnan(arg1);
+            if (!ok) { ok = true; break; }
+            cobj->scrollToPage(arg0, arg1);
+            args.rval().setUndefined();
+            return true;
+        }
+    } while(0);
+
+    do {
+        if (argc == 1) {
+            ssize_t arg0 = 0;
+            ok &= jsval_to_ssize(cx, args.get(0), &arg0);
+            if (!ok) { ok = true; break; }
+            cobj->scrollToPage(arg0);
+            args.rval().setUndefined();
+            return true;
+        }
+    } while(0);
+
+    JS_ReportError(cx, "js_cocos2dx_ui_PageView_scrollToPage : wrong number of arguments");
     return false;
 }
 bool js_cocos2dx_ui_PageView_setIndicatorPositionAsAnchorPoint(JSContext *cx, uint32_t argc, jsval *vp)
@@ -12541,22 +12744,41 @@ bool js_cocos2dx_ui_PageView_setIndicatorPositionAsAnchorPoint(JSContext *cx, ui
 }
 bool js_cocos2dx_ui_PageView_scrollToItem(JSContext *cx, uint32_t argc, jsval *vp)
 {
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::PageView* cobj = (cocos2d::ui::PageView *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_PageView_scrollToItem : Invalid Native Object");
-    if (argc == 1) {
-        ssize_t arg0 = 0;
-        ok &= jsval_to_ssize(cx, args.get(0), &arg0);
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_PageView_scrollToItem : Error processing arguments");
-        cobj->scrollToItem(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
+    cocos2d::ui::PageView* cobj = nullptr;
 
-    JS_ReportError(cx, "js_cocos2dx_ui_PageView_scrollToItem : wrong number of arguments: %d, was expecting %d", argc, 1);
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    JS::RootedObject obj(cx);
+    obj.set(args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cobj = (cocos2d::ui::PageView *)(proxy ? proxy->ptr : nullptr);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_PageView_scrollToItem : Invalid Native Object");
+    do {
+        if (argc == 2) {
+            ssize_t arg0 = 0;
+            ok &= jsval_to_ssize(cx, args.get(0), &arg0);
+            if (!ok) { ok = true; break; }
+            double arg1 = 0;
+            ok &= JS::ToNumber( cx, args.get(1), &arg1) && !std::isnan(arg1);
+            if (!ok) { ok = true; break; }
+            cobj->scrollToItem(arg0, arg1);
+            args.rval().setUndefined();
+            return true;
+        }
+    } while(0);
+
+    do {
+        if (argc == 1) {
+            ssize_t arg0 = 0;
+            ok &= jsval_to_ssize(cx, args.get(0), &arg0);
+            if (!ok) { ok = true; break; }
+            cobj->scrollToItem(arg0);
+            args.rval().setUndefined();
+            return true;
+        }
+    } while(0);
+
+    JS_ReportError(cx, "js_cocos2dx_ui_PageView_scrollToItem : wrong number of arguments");
     return false;
 }
 bool js_cocos2dx_ui_PageView_setIndicatorIndexNodesColor(JSContext *cx, uint32_t argc, jsval *vp)
@@ -15988,22 +16210,6 @@ void js_register_cocos2dx_ui_RelativeBox(JSContext *cx, JS::HandleObject global)
 JSClass  *jsb_cocos2d_ui_Scale9Sprite_class;
 JSObject *jsb_cocos2d_ui_Scale9Sprite_prototype;
 
-bool js_cocos2dx_ui_Scale9Sprite_disableCascadeColor(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_disableCascadeColor : Invalid Native Object");
-    if (argc == 0) {
-        cobj->disableCascadeColor();
-        args.rval().setUndefined();
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_disableCascadeColor : wrong number of arguments: %d, was expecting %d", argc, 0);
-    return false;
-}
 bool js_cocos2dx_ui_Scale9Sprite_updateWithSprite(JSContext *cx, uint32_t argc, jsval *vp)
 {
     bool ok = true;
@@ -16082,84 +16288,6 @@ bool js_cocos2dx_ui_Scale9Sprite_updateWithSprite(JSContext *cx, uint32_t argc, 
     JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_updateWithSprite : wrong number of arguments");
     return false;
 }
-bool js_cocos2dx_ui_Scale9Sprite_isFlippedX(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_isFlippedX : Invalid Native Object");
-    if (argc == 0) {
-        bool ret = cobj->isFlippedX();
-        jsval jsret = JSVAL_NULL;
-        jsret = BOOLEAN_TO_JSVAL(ret);
-        args.rval().set(jsret);
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_isFlippedX : wrong number of arguments: %d, was expecting %d", argc, 0);
-    return false;
-}
-bool js_cocos2dx_ui_Scale9Sprite_setScale9Enabled(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    bool ok = true;
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_setScale9Enabled : Invalid Native Object");
-    if (argc == 1) {
-        bool arg0;
-        arg0 = JS::ToBoolean(args.get(0));
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_setScale9Enabled : Error processing arguments");
-        cobj->setScale9Enabled(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setScale9Enabled : wrong number of arguments: %d, was expecting %d", argc, 1);
-    return false;
-}
-bool js_cocos2dx_ui_Scale9Sprite_setFlippedY(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    bool ok = true;
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_setFlippedY : Invalid Native Object");
-    if (argc == 1) {
-        bool arg0;
-        arg0 = JS::ToBoolean(args.get(0));
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_setFlippedY : Error processing arguments");
-        cobj->setFlippedY(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setFlippedY : wrong number of arguments: %d, was expecting %d", argc, 1);
-    return false;
-}
-bool js_cocos2dx_ui_Scale9Sprite_setFlippedX(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    bool ok = true;
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_setFlippedX : Invalid Native Object");
-    if (argc == 1) {
-        bool arg0;
-        arg0 = JS::ToBoolean(args.get(0));
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_setFlippedX : Error processing arguments");
-        cobj->setFlippedX(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setFlippedX : wrong number of arguments: %d, was expecting %d", argc, 1);
-    return false;
-}
 bool js_cocos2dx_ui_Scale9Sprite_resizableSpriteWithCapInsets(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -16186,38 +16314,22 @@ bool js_cocos2dx_ui_Scale9Sprite_resizableSpriteWithCapInsets(JSContext *cx, uin
     JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_resizableSpriteWithCapInsets : wrong number of arguments: %d, was expecting %d", argc, 1);
     return false;
 }
-bool js_cocos2dx_ui_Scale9Sprite_disableCascadeOpacity(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_cocos2dx_ui_Scale9Sprite_getCapInsets(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
     cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_disableCascadeOpacity : Invalid Native Object");
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_getCapInsets : Invalid Native Object");
     if (argc == 0) {
-        cobj->disableCascadeOpacity();
-        args.rval().setUndefined();
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_disableCascadeOpacity : wrong number of arguments: %d, was expecting %d", argc, 0);
-    return false;
-}
-bool js_cocos2dx_ui_Scale9Sprite_getState(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_getState : Invalid Native Object");
-    if (argc == 0) {
-        int ret = (int)cobj->getState();
+        cocos2d::Rect ret = cobj->getCapInsets();
         jsval jsret = JSVAL_NULL;
-        jsret = int32_to_jsval(cx, ret);
+        jsret = ccrect_to_jsval(cx, ret);
         args.rval().set(jsret);
         return true;
     }
 
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_getState : wrong number of arguments: %d, was expecting %d", argc, 0);
+    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_getCapInsets : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_setState(JSContext *cx, uint32_t argc, jsval *vp)
@@ -16262,45 +16374,26 @@ bool js_cocos2dx_ui_Scale9Sprite_setInsetBottom(JSContext *cx, uint32_t argc, js
 }
 bool js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName(JSContext *cx, uint32_t argc, jsval *vp)
 {
-    bool ok = true;
-    cocos2d::ui::Scale9Sprite* cobj = nullptr;
-
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    JS::RootedObject obj(cx);
-    obj.set(args.thisv().toObjectOrNull());
+    bool ok = true;
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : nullptr);
+    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
     JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName : Invalid Native Object");
-    do {
-        if (argc == 1) {
-            std::string arg0;
-            ok &= jsval_to_std_string(cx, args.get(0), &arg0);
-            if (!ok) { ok = true; break; }
-            bool ret = cobj->initWithSpriteFrameName(arg0);
-            jsval jsret = JSVAL_NULL;
-            jsret = BOOLEAN_TO_JSVAL(ret);
-            args.rval().set(jsret);
-            return true;
-        }
-    } while(0);
+    if (argc == 2) {
+        std::string arg0;
+        cocos2d::Rect arg1;
+        ok &= jsval_to_std_string(cx, args.get(0), &arg0);
+        ok &= jsval_to_ccrect(cx, args.get(1), &arg1);
+        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName : Error processing arguments");
+        bool ret = cobj->initWithSpriteFrameName(arg0, arg1);
+        jsval jsret = JSVAL_NULL;
+        jsret = BOOLEAN_TO_JSVAL(ret);
+        args.rval().set(jsret);
+        return true;
+    }
 
-    do {
-        if (argc == 2) {
-            std::string arg0;
-            ok &= jsval_to_std_string(cx, args.get(0), &arg0);
-            if (!ok) { ok = true; break; }
-            cocos2d::Rect arg1;
-            ok &= jsval_to_ccrect(cx, args.get(1), &arg1);
-            if (!ok) { ok = true; break; }
-            bool ret = cobj->initWithSpriteFrameName(arg0, arg1);
-            jsval jsret = JSVAL_NULL;
-            jsret = BOOLEAN_TO_JSVAL(ret);
-            args.rval().set(jsret);
-            return true;
-        }
-    } while(0);
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName : wrong number of arguments");
+    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName : wrong number of arguments: %d, was expecting %d", argc, 2);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_getSprite(JSContext *cx, uint32_t argc, jsval *vp)
@@ -16498,22 +16591,6 @@ bool js_cocos2dx_ui_Scale9Sprite_setSpriteFrame(JSContext *cx, uint32_t argc, js
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
     cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
     JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_setSpriteFrame : Invalid Native Object");
-    if (argc == 1) {
-        cocos2d::SpriteFrame* arg0 = nullptr;
-        do {
-            if (args.get(0).isNull()) { arg0 = nullptr; break; }
-            if (!args.get(0).isObject()) { ok = false; break; }
-            js_proxy_t *jsProxy;
-            JS::RootedObject tmpObj(cx, args.get(0).toObjectOrNull());
-            jsProxy = jsb_get_js_proxy(tmpObj);
-            arg0 = (cocos2d::SpriteFrame*)(jsProxy ? jsProxy->ptr : NULL);
-            JSB_PRECONDITION2( arg0, cx, false, "Invalid Native Object");
-        } while (0);
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_setSpriteFrame : Error processing arguments");
-        cobj->setSpriteFrame(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
     if (argc == 2) {
         cocos2d::SpriteFrame* arg0 = nullptr;
         cocos2d::Rect arg1;
@@ -16533,25 +16610,25 @@ bool js_cocos2dx_ui_Scale9Sprite_setSpriteFrame(JSContext *cx, uint32_t argc, js
         return true;
     }
 
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setSpriteFrame : wrong number of arguments: %d, was expecting %d", argc, 1);
+    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setSpriteFrame : wrong number of arguments: %d, was expecting %d", argc, 2);
     return false;
 }
-bool js_cocos2dx_ui_Scale9Sprite_getBlendFunc(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_cocos2dx_ui_Scale9Sprite_getState(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
     cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_getBlendFunc : Invalid Native Object");
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_getState : Invalid Native Object");
     if (argc == 0) {
-        const cocos2d::BlendFunc& ret = cobj->getBlendFunc();
+        int ret = (int)cobj->getState();
         jsval jsret = JSVAL_NULL;
-        jsret = blendfunc_to_jsval(cx, ret);
+        jsret = int32_to_jsval(cx, ret);
         args.rval().set(jsret);
         return true;
     }
 
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_getBlendFunc : wrong number of arguments: %d, was expecting %d", argc, 0);
+    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_getState : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_getInsetBottom(JSContext *cx, uint32_t argc, jsval *vp)
@@ -16572,22 +16649,24 @@ bool js_cocos2dx_ui_Scale9Sprite_getInsetBottom(JSContext *cx, uint32_t argc, js
     JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_getInsetBottom : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
-bool js_cocos2dx_ui_Scale9Sprite_getCapInsets(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_cocos2dx_ui_Scale9Sprite_setScale9Enabled(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
     JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
     cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_getCapInsets : Invalid Native Object");
-    if (argc == 0) {
-        cocos2d::Rect ret = cobj->getCapInsets();
-        jsval jsret = JSVAL_NULL;
-        jsret = ccrect_to_jsval(cx, ret);
-        args.rval().set(jsret);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_setScale9Enabled : Invalid Native Object");
+    if (argc == 1) {
+        bool arg0;
+        arg0 = JS::ToBoolean(args.get(0));
+        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_setScale9Enabled : Error processing arguments");
+        cobj->setScale9Enabled(arg0);
+        args.rval().setUndefined();
         return true;
     }
 
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_getCapInsets : wrong number of arguments: %d, was expecting %d", argc, 0);
+    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setScale9Enabled : wrong number of arguments: %d, was expecting %d", argc, 1);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_isScale9Enabled(JSContext *cx, uint32_t argc, jsval *vp)
@@ -16691,11 +16770,11 @@ bool js_cocos2dx_ui_Scale9Sprite_initWithFile(JSContext *cx, uint32_t argc, jsva
     JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_initWithFile : Invalid Native Object");
     do {
         if (argc == 2) {
-            std::string arg0;
-            ok &= jsval_to_std_string(cx, args.get(0), &arg0);
+            cocos2d::Rect arg0;
+            ok &= jsval_to_ccrect(cx, args.get(0), &arg0);
             if (!ok) { ok = true; break; }
-            cocos2d::Rect arg1;
-            ok &= jsval_to_ccrect(cx, args.get(1), &arg1);
+            std::string arg1;
+            ok &= jsval_to_std_string(cx, args.get(1), &arg1);
             if (!ok) { ok = true; break; }
             bool ret = cobj->initWithFile(arg0, arg1);
             jsval jsret = JSVAL_NULL;
@@ -16724,56 +16803,7 @@ bool js_cocos2dx_ui_Scale9Sprite_initWithFile(JSContext *cx, uint32_t argc, jsva
         }
     } while(0);
 
-    do {
-        if (argc == 2) {
-            cocos2d::Rect arg0;
-            ok &= jsval_to_ccrect(cx, args.get(0), &arg0);
-            if (!ok) { ok = true; break; }
-            std::string arg1;
-            ok &= jsval_to_std_string(cx, args.get(1), &arg1);
-            if (!ok) { ok = true; break; }
-            bool ret = cobj->initWithFile(arg0, arg1);
-            jsval jsret = JSVAL_NULL;
-            jsret = BOOLEAN_TO_JSVAL(ret);
-            args.rval().set(jsret);
-            return true;
-        }
-    } while(0);
-
-    do {
-        if (argc == 1) {
-            std::string arg0;
-            ok &= jsval_to_std_string(cx, args.get(0), &arg0);
-            if (!ok) { ok = true; break; }
-            bool ret = cobj->initWithFile(arg0);
-            jsval jsret = JSVAL_NULL;
-            jsret = BOOLEAN_TO_JSVAL(ret);
-            args.rval().set(jsret);
-            return true;
-        }
-    } while(0);
-
     JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_initWithFile : wrong number of arguments");
-    return false;
-}
-bool js_cocos2dx_ui_Scale9Sprite_setBlendFunc(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    bool ok = true;
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_setBlendFunc : Invalid Native Object");
-    if (argc == 1) {
-        cocos2d::BlendFunc arg0;
-        ok &= jsval_to_blendfunc(cx, args.get(0), &arg0);
-        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_setBlendFunc : Error processing arguments");
-        cobj->setBlendFunc(arg0);
-        args.rval().setUndefined();
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setBlendFunc : wrong number of arguments: %d, was expecting %d", argc, 1);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_getInsetTop(JSContext *cx, uint32_t argc, jsval *vp)
@@ -16816,61 +16846,34 @@ bool js_cocos2dx_ui_Scale9Sprite_setInsetLeft(JSContext *cx, uint32_t argc, jsva
 }
 bool js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame(JSContext *cx, uint32_t argc, jsval *vp)
 {
-    bool ok = true;
-    cocos2d::ui::Scale9Sprite* cobj = nullptr;
-
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    JS::RootedObject obj(cx);
-    obj.set(args.thisv().toObjectOrNull());
+    bool ok = true;
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
     js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : nullptr);
+    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
     JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame : Invalid Native Object");
-    do {
-        if (argc == 1) {
-            cocos2d::SpriteFrame* arg0 = nullptr;
-            do {
-                if (args.get(0).isNull()) { arg0 = nullptr; break; }
-                if (!args.get(0).isObject()) { ok = false; break; }
-                js_proxy_t *jsProxy;
-                JS::RootedObject tmpObj(cx, args.get(0).toObjectOrNull());
-                jsProxy = jsb_get_js_proxy(tmpObj);
-                arg0 = (cocos2d::SpriteFrame*)(jsProxy ? jsProxy->ptr : NULL);
-                JSB_PRECONDITION2( arg0, cx, false, "Invalid Native Object");
-            } while (0);
-            if (!ok) { ok = true; break; }
-            bool ret = cobj->initWithSpriteFrame(arg0);
-            jsval jsret = JSVAL_NULL;
-            jsret = BOOLEAN_TO_JSVAL(ret);
-            args.rval().set(jsret);
-            return true;
-        }
-    } while(0);
+    if (argc == 2) {
+        cocos2d::SpriteFrame* arg0 = nullptr;
+        cocos2d::Rect arg1;
+        do {
+            if (args.get(0).isNull()) { arg0 = nullptr; break; }
+            if (!args.get(0).isObject()) { ok = false; break; }
+            js_proxy_t *jsProxy;
+            JS::RootedObject tmpObj(cx, args.get(0).toObjectOrNull());
+            jsProxy = jsb_get_js_proxy(tmpObj);
+            arg0 = (cocos2d::SpriteFrame*)(jsProxy ? jsProxy->ptr : NULL);
+            JSB_PRECONDITION2( arg0, cx, false, "Invalid Native Object");
+        } while (0);
+        ok &= jsval_to_ccrect(cx, args.get(1), &arg1);
+        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame : Error processing arguments");
+        bool ret = cobj->initWithSpriteFrame(arg0, arg1);
+        jsval jsret = JSVAL_NULL;
+        jsret = BOOLEAN_TO_JSVAL(ret);
+        args.rval().set(jsret);
+        return true;
+    }
 
-    do {
-        if (argc == 2) {
-            cocos2d::SpriteFrame* arg0 = nullptr;
-            do {
-                if (args.get(0).isNull()) { arg0 = nullptr; break; }
-                if (!args.get(0).isObject()) { ok = false; break; }
-                js_proxy_t *jsProxy;
-                JS::RootedObject tmpObj(cx, args.get(0).toObjectOrNull());
-                jsProxy = jsb_get_js_proxy(tmpObj);
-                arg0 = (cocos2d::SpriteFrame*)(jsProxy ? jsProxy->ptr : NULL);
-                JSB_PRECONDITION2( arg0, cx, false, "Invalid Native Object");
-            } while (0);
-            if (!ok) { ok = true; break; }
-            cocos2d::Rect arg1;
-            ok &= jsval_to_ccrect(cx, args.get(1), &arg1);
-            if (!ok) { ok = true; break; }
-            bool ret = cobj->initWithSpriteFrame(arg0, arg1);
-            jsval jsret = JSVAL_NULL;
-            jsret = BOOLEAN_TO_JSVAL(ret);
-            args.rval().set(jsret);
-            return true;
-        }
-    } while(0);
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame : wrong number of arguments");
+    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame : wrong number of arguments: %d, was expecting %d", argc, 2);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_getPreferredSize(JSContext *cx, uint32_t argc, jsval *vp)
@@ -16909,24 +16912,6 @@ bool js_cocos2dx_ui_Scale9Sprite_setCapInsets(JSContext *cx, uint32_t argc, jsva
     }
 
     JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_setCapInsets : wrong number of arguments: %d, was expecting %d", argc, 1);
-    return false;
-}
-bool js_cocos2dx_ui_Scale9Sprite_isFlippedY(JSContext *cx, uint32_t argc, jsval *vp)
-{
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    cocos2d::ui::Scale9Sprite* cobj = (cocos2d::ui::Scale9Sprite *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_Scale9Sprite_isFlippedY : Invalid Native Object");
-    if (argc == 0) {
-        bool ret = cobj->isFlippedY();
-        jsval jsret = JSVAL_NULL;
-        jsret = BOOLEAN_TO_JSVAL(ret);
-        args.rval().set(jsret);
-        return true;
-    }
-
-    JS_ReportError(cx, "js_cocos2dx_ui_Scale9Sprite_isFlippedY : wrong number of arguments: %d, was expecting %d", argc, 0);
     return false;
 }
 bool js_cocos2dx_ui_Scale9Sprite_getInsetLeft(JSContext *cx, uint32_t argc, jsval *vp)
@@ -17202,7 +17187,7 @@ static bool js_cocos2dx_ui_Scale9Sprite_ctor(JSContext *cx, uint32_t argc, jsval
 }
 
 
-extern JSObject *jsb_cocos2d_Node_prototype;
+extern JSObject *jsb_cocos2d_Sprite_prototype;
 
     
 void js_register_cocos2dx_ui_Scale9Sprite(JSContext *cx, JS::HandleObject global) {
@@ -17222,40 +17207,32 @@ void js_register_cocos2dx_ui_Scale9Sprite(JSContext *cx, JS::HandleObject global
     };
 
     static JSFunctionSpec funcs[] = {
-        JS_FN("disableCascadeColor", js_cocos2dx_ui_Scale9Sprite_disableCascadeColor, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("updateWithSprite", js_cocos2dx_ui_Scale9Sprite_updateWithSprite, 4, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("isFlippedX", js_cocos2dx_ui_Scale9Sprite_isFlippedX, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("setScale9Enabled", js_cocos2dx_ui_Scale9Sprite_setScale9Enabled, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("setFlippedY", js_cocos2dx_ui_Scale9Sprite_setFlippedY, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("setFlippedX", js_cocos2dx_ui_Scale9Sprite_setFlippedX, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("resizableSpriteWithCapInsets", js_cocos2dx_ui_Scale9Sprite_resizableSpriteWithCapInsets, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("disableCascadeOpacity", js_cocos2dx_ui_Scale9Sprite_disableCascadeOpacity, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("getState", js_cocos2dx_ui_Scale9Sprite_getState, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getCapInsets", js_cocos2dx_ui_Scale9Sprite_getCapInsets, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setState", js_cocos2dx_ui_Scale9Sprite_setState, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setInsetBottom", js_cocos2dx_ui_Scale9Sprite_setInsetBottom, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("initWithSpriteFrameName", js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("initWithSpriteFrameName", js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrameName, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getSprite", js_cocos2dx_ui_Scale9Sprite_getSprite, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setInsetTop", js_cocos2dx_ui_Scale9Sprite_setInsetTop, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setRenderingType", js_cocos2dx_ui_Scale9Sprite_setRenderingType, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("init", js_cocos2dx_ui_Scale9Sprite_init, 3, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setPreferredSize", js_cocos2dx_ui_Scale9Sprite_setPreferredSize, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("setSpriteFrame", js_cocos2dx_ui_Scale9Sprite_setSpriteFrame, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("getBlendFunc", js_cocos2dx_ui_Scale9Sprite_getBlendFunc, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("setSpriteFrame", js_cocos2dx_ui_Scale9Sprite_setSpriteFrame, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getState", js_cocos2dx_ui_Scale9Sprite_getState, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getInsetBottom", js_cocos2dx_ui_Scale9Sprite_getInsetBottom, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("getCapInsets", js_cocos2dx_ui_Scale9Sprite_getCapInsets, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("setScale9Enabled", js_cocos2dx_ui_Scale9Sprite_setScale9Enabled, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("isScale9Enabled", js_cocos2dx_ui_Scale9Sprite_isScale9Enabled, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("resetRender", js_cocos2dx_ui_Scale9Sprite_resetRender, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getRenderingType", js_cocos2dx_ui_Scale9Sprite_getRenderingType, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getInsetRight", js_cocos2dx_ui_Scale9Sprite_getInsetRight, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getOriginalSize", js_cocos2dx_ui_Scale9Sprite_getOriginalSize, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("initWithFile", js_cocos2dx_ui_Scale9Sprite_initWithFile, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("setBlendFunc", js_cocos2dx_ui_Scale9Sprite_setBlendFunc, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("initWithFile", js_cocos2dx_ui_Scale9Sprite_initWithFile, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getInsetTop", js_cocos2dx_ui_Scale9Sprite_getInsetTop, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setInsetLeft", js_cocos2dx_ui_Scale9Sprite_setInsetLeft, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("initWithSpriteFrame", js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("initWithSpriteFrame", js_cocos2dx_ui_Scale9Sprite_initWithSpriteFrame, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getPreferredSize", js_cocos2dx_ui_Scale9Sprite_getPreferredSize, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setCapInsets", js_cocos2dx_ui_Scale9Sprite_setCapInsets, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-        JS_FN("isFlippedY", js_cocos2dx_ui_Scale9Sprite_isFlippedY, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getInsetLeft", js_cocos2dx_ui_Scale9Sprite_getInsetLeft, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setInsetRight", js_cocos2dx_ui_Scale9Sprite_setInsetRight, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("ctor", js_cocos2dx_ui_Scale9Sprite_ctor, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -17269,7 +17246,7 @@ void js_register_cocos2dx_ui_Scale9Sprite(JSContext *cx, JS::HandleObject global
         JS_FS_END
     };
 
-    JS::RootedObject parent_proto(cx, jsb_cocos2d_Node_prototype);
+    JS::RootedObject parent_proto(cx, jsb_cocos2d_Sprite_prototype);
     jsb_cocos2d_ui_Scale9Sprite_prototype = JS_InitClass(
         cx, global,
         parent_proto,
@@ -17736,6 +17713,26 @@ bool js_cocos2dx_ui_EditBox_setFont(JSContext *cx, uint32_t argc, jsval *vp)
     JS_ReportError(cx, "js_cocos2dx_ui_EditBox_setFont : wrong number of arguments: %d, was expecting %d", argc, 2);
     return false;
 }
+bool js_cocos2dx_ui_EditBox_setTextHorizontalAlignment(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
+    js_proxy_t *proxy = jsb_get_js_proxy(obj);
+    cocos2d::ui::EditBox* cobj = (cocos2d::ui::EditBox *)(proxy ? proxy->ptr : NULL);
+    JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_EditBox_setTextHorizontalAlignment : Invalid Native Object");
+    if (argc == 1) {
+        cocos2d::TextHAlignment arg0;
+        ok &= jsval_to_int32(cx, args.get(0), (int32_t *)&arg0);
+        JSB_PRECONDITION2(ok, cx, false, "js_cocos2dx_ui_EditBox_setTextHorizontalAlignment : Error processing arguments");
+        cobj->setTextHorizontalAlignment(arg0);
+        args.rval().setUndefined();
+        return true;
+    }
+
+    JS_ReportError(cx, "js_cocos2dx_ui_EditBox_setTextHorizontalAlignment : wrong number of arguments: %d, was expecting %d", argc, 1);
+    return false;
+}
 bool js_cocos2dx_ui_EditBox_create(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
@@ -17968,6 +17965,7 @@ void js_register_cocos2dx_ui_EditBox(JSContext *cx, JS::HandleObject global) {
         JS_FN("getMaxLength", js_cocos2dx_ui_EditBox_getMaxLength, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setMaxLength", js_cocos2dx_ui_EditBox_setMaxLength, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("setFont", js_cocos2dx_ui_EditBox_setFont, 2, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("setTextHorizontalAlignment", js_cocos2dx_ui_EditBox_setTextHorizontalAlignment, 1, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("ctor", js_cocos2dx_ui_EditBox_ctor, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FS_END
     };
@@ -19136,7 +19134,7 @@ bool js_cocos2dx_ui_TabHeader_getTitleText(JSContext *cx, uint32_t argc, jsval *
     cocos2d::ui::TabHeader* cobj = (cocos2d::ui::TabHeader *)(proxy ? proxy->ptr : NULL);
     JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_TabHeader_getTitleText : Invalid Native Object");
     if (argc == 0) {
-        const std::string ret = cobj->getTitleText();
+        std::string ret = cobj->getTitleText();
         jsval jsret = JSVAL_NULL;
         jsret = std_string_to_jsval(cx, ret);
         args.rval().set(jsret);
@@ -19212,7 +19210,7 @@ bool js_cocos2dx_ui_TabHeader_getTitleFontName(JSContext *cx, uint32_t argc, jsv
     cocos2d::ui::TabHeader* cobj = (cocos2d::ui::TabHeader *)(proxy ? proxy->ptr : NULL);
     JSB_PRECONDITION2( cobj, cx, false, "js_cocos2dx_ui_TabHeader_getTitleFontName : Invalid Native Object");
     if (argc == 0) {
-        const std::string ret = cobj->getTitleFontName();
+        std::string ret = cobj->getTitleFontName();
         jsval jsret = JSVAL_NULL;
         jsret = std_string_to_jsval(cx, ret);
         args.rval().set(jsret);
